@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saas-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./php/php.ini:/usr/local/etc/php/conf.d/php.ini
+    networks:
+      - saas-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: saas-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - saas-network
+
+  db:
+    image: mysql:8.0
+    container_name: saas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: saas_assessment
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_PASSWORD: secret
+      MYSQL_USER: saas_user
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - saas-network
+
+  redis:
+    image: redis:alpine
+    container_name: saas-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - saas-network
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: saas-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - saas-network
+
+volumes:
+  dbdata:
+
+networks:
+  saas-network:
+    driver: bridge

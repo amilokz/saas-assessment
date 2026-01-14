@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // First, drop the existing table if it's wrong
+        Schema::dropIfExists('audit_logs');
+        
+        // Recreate with correct structure
+        Schema::create('audit_logs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+            
+            $table->string('event');
+            $table->string('model_type')->nullable();
+            $table->unsignedBigInteger('model_id')->nullable();
+            
+            $table->json('old_values')->nullable();
+            $table->json('new_values')->nullable();
+            
+            $table->string('ip_address')->nullable();
+            $table->string('user_agent')->nullable();
+            $table->string('url')->nullable();
+            
+            $table->text('description')->nullable();
+            
+            $table->timestamps();
+            
+            $table->index(['company_id', 'created_at']);
+            $table->index(['event', 'created_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('audit_logs');
+    }
+};
