@@ -1,206 +1,145 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'SaaS Assessment') }} - Company Registration</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Registration - SaaS Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="font-sans antialiased bg-gray-50">
-    <div class="min-h-screen flex flex-col">
-        <!-- Navigation -->
-        <nav class="bg-white shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <a href="{{ route('home') }}" class="text-xl font-bold text-gray-800">
-                            {{ config('app.name', 'SaaS Platform') }}
-                        </a>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Register Your Company</h4>
+                        <small>Start your 7-day free trial</small>
                     </div>
-                    <div class="flex items-center">
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                            Already have an account? Sign in
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Page Content -->
-        <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-md w-full space-y-8">
-                <div>
-                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Register Your Company
-                    </h2>
-                    <p class="mt-2 text-center text-sm text-gray-600">
-                        Start your 7-day free trial. No credit card required.
-                    </p>
-                </div>
-
-                <!-- Form -->
-                <form class="mt-8 space-y-6" method="POST" action="{{ route('company.register') }}">
-                    @csrf
-
-                    <!-- Company Information -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Company Information</h3>
+                    <div class="card-body">
+                        @if(session('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
                         
-                        <div class="space-y-4">
-                            <!-- Company Name -->
-                            <div>
-                                <label for="company_name" class="block text-sm font-medium text-gray-700">
-                                    Company Name *
-                                </label>
-                                <input type="text" id="company_name" name="company_name" required
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    value="{{ old('company_name') }}">
+                        @if(session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ session('error') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+                        
+                        @if($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <ul class="mb-0">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+                        
+                        <form method="POST" action="{{ route('company.register.store') }}">
+                            @csrf
+                            
+                            <div class="mb-3">
+                                <label for="company_name" class="form-label">Company Name *</label>
+                                <input type="text" class="form-control @error('company_name') is-invalid @enderror" 
+                                       id="company_name" name="company_name" 
+                                       value="{{ old('company_name') }}" required>
                                 @error('company_name')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- Admin Name -->
-                            <div>
-                                <label for="admin_name" class="block text-sm font-medium text-gray-700">
-                                    Your Name (Admin) *
-                                </label>
-                                <input type="text" id="admin_name" name="admin_name" required
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    value="{{ old('admin_name') }}">
+                            
+                            <div class="mb-3">
+                                <label for="admin_name" class="form-label">Admin Name *</label>
+                                <input type="text" class="form-control @error('admin_name') is-invalid @enderror" 
+                                       id="admin_name" name="admin_name" 
+                                       value="{{ old('admin_name') }}" required>
                                 @error('admin_name')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- Email -->
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">
-                                    Email Address *
-                                </label>
-                                <input type="email" id="email" name="email" required
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    value="{{ old('email') }}">
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                       id="email" name="email" 
+                                       value="{{ old('email') }}" required>
                                 @error('email')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- Business Type -->
-                            <div>
-                                <label for="business_type" class="block text-sm font-medium text-gray-700">
-                                    Business Type
-                                </label>
-                                <select id="business_type" name="business_type"
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="">Select business type</option>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                       id="password" name="password" required>
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password_confirmation" class="form-label">Confirm Password *</label>
+                                <input type="password" class="form-control" 
+                                       id="password_confirmation" name="password_confirmation" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="business_type" class="form-label">Business Type *</label>
+                                <select class="form-control @error('business_type') is-invalid @enderror" 
+                                        id="business_type" name="business_type" required>
+                                    <option value="">Select Business Type</option>
                                     <option value="Technology" {{ old('business_type') == 'Technology' ? 'selected' : '' }}>Technology</option>
-                                    <option value="Healthcare" {{ old('business_type') == 'Healthcare' ? 'selected' : '' }}>Healthcare</option>
-                                    <option value="Finance" {{ old('business_type') == 'Finance' ? 'selected' : '' }}>Finance</option>
-                                    <option value="Education" {{ old('business_type') == 'Education' ? 'selected' : '' }}>Education</option>
                                     <option value="Retail" {{ old('business_type') == 'Retail' ? 'selected' : '' }}>Retail</option>
+                                    <option value="Services" {{ old('business_type') == 'Services' ? 'selected' : '' }}>Services</option>
                                     <option value="Manufacturing" {{ old('business_type') == 'Manufacturing' ? 'selected' : '' }}>Manufacturing</option>
                                     <option value="Other" {{ old('business_type') == 'Other' ? 'selected' : '' }}>Other</option>
                                 </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Account Information -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
-                        
-                        <div class="space-y-4">
-                            <!-- Password -->
-                            <div>
-                                <label for="password" class="block text-sm font-medium text-gray-700">
-                                    Password *
-                                </label>
-                                <input type="password" id="password" name="password" required
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                @error('password')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @error('business_type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- Confirm Password -->
-                            <div>
-                                <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
-                                    Confirm Password *
-                                </label>
-                                <input type="password" id="password_confirmation" name="password_confirmation" required
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-building"></i> Register Company & Start Trial
+                                </button>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Trial Information -->
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h4 class="text-sm font-medium text-blue-800">7-Day Free Trial</h4>
-                                <p class="mt-1 text-sm text-blue-700">
-                                    Your account will start with a 7-day free trial. After registration, 
-                                    a super admin will review and approve your account.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Terms and Conditions -->
-                    <div class="flex items-center">
-                        <input id="terms" name="terms" type="checkbox" required
-                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="terms" class="ml-2 block text-sm text-gray-700">
-                            I agree to the 
-                            <a href="#" class="text-blue-600 hover:text-blue-800">Terms of Service</a> 
-                            and 
-                            <a href="#" class="text-blue-600 hover:text-blue-800">Privacy Policy</a>
-                        </label>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div>
-                        <button type="submit"
-                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Start Free Trial
-                        </button>
-                    </div>
-
-                    <!-- Login Link -->
-                    <div class="text-center">
-                        <p class="text-sm text-gray-600">
-                            Already have an account?
-                            <a href="{{ route('login') }}" class="font-medium text-blue-600 hover:text-blue-800">
-                                Sign in here
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-2">Already have an account?</p>
+                            <a href="{{ route('login') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-sign-in-alt"></i> Login Here
                             </a>
-                        </p>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 py-6">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center text-sm text-gray-500">
-                    © {{ date('Y') }} {{ config('app.name', 'SaaS Platform') }}. All rights reserved.
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Trial Information:</h6>
+                        <ul class="mb-0">
+                            <li>7-day free trial</li>
+                            <li>1 user included</li>
+                            <li>2 file uploads allowed</li>
+                            <li>Full features during trial</li>
+                            <li>No credit card required</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </footer>
+        </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -9,12 +9,18 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $company = Auth::user()->company;
         $user = Auth::user();
         
+        // Get minimal company data
+        $company = $user->company;
+        
+        if (!$company) {
+            abort(403, 'No company associated with your account.');
+        }
+
         return view('company.dashboard', [
-            'company' => $company,
             'user' => $user,
+            'company' => $company,
         ]);
     }
 }

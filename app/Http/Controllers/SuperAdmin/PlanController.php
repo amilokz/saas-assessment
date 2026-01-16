@@ -10,7 +10,14 @@ class PlanController extends Controller
 {
     public function index()
     {
-        $plans = Plan::orderBy('sort_order')->get();
+        // Check if sort_order column exists
+        try {
+            $plans = Plan::orderBy('sort_order')->get();
+        } catch (\Exception $e) {
+            // Fallback to id ordering if sort_order doesn't exist
+            $plans = Plan::orderBy('id')->get();
+        }
+        
         return view('super-admin.plans', compact('plans'));
     }
 
@@ -37,6 +44,11 @@ class PlanController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
+        // Remove sort_order if column doesn't exist
+        if (!\Schema::hasColumn('plans', 'sort_order')) {
+            unset($validated['sort_order']);
+        }
+
         if (isset($validated['features'])) {
             $validated['features'] = json_encode($validated['features']);
         }
@@ -52,33 +64,42 @@ class PlanController extends Controller
         return view('super-admin.plans-edit', compact('plan'));
     }
 
-    public function update(Request $request, Plan $plan)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:plans,slug,' . $plan->id,
-            'description' => 'nullable|string',
-            'monthly_price' => 'required|numeric|min:0',
-            'yearly_price' => 'required|numeric|min:0',
-            'max_users' => 'nullable|integer|min:0',
-            'max_files' => 'nullable|integer|min:0',
-            'max_storage_mb' => 'nullable|integer|min:0',
-            'features' => 'nullable|array',
-            'is_active' => 'boolean',
-            'is_trial' => 'boolean',
-            'trial_days' => 'nullable|integer|min:0',
-            'sort_order' => 'nullable|integer',
-        ]);
+ public function update(Request $request, Plan $plan)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'slug' => 'required|string|unique:plans,slug,' . $plan->id,
+        'description' => 'nullable|string',
+        'monthly_price' => 'required|numeric|min:0',
+        'yearly_price' => 'required|numeric|min:0',
+        'max_users' => 'nullable|integer|min:0',
+        'max_files' => 'nullable|integer|min:0',
+        'max_storage_mb' => 'nullable|integer|min:0',
+        'features' => 'nullable|string', // Changed from array to string
+        'is_active' => 'boolean',
+        'is_trial' => 'boolean',
+        'trial_days' => 'nullable|integer|min:0',
+        'sort_order' => 'nullable|integer',
+    ]);
 
-        if (isset($validated['features'])) {
-            $validated['features'] = json_encode($validated['features']);
-        }
-
-        $plan->update($validated);
-
-        return redirect()->route('super-admin.plans.index')
-            ->with('success', 'Plan updated successfully.');
+    // Remove sort_order if column doesn't exist
+    if (!\Schema::hasColumn('plans', 'sort_order')) {
+        unset($validated['sort_order']);
     }
+
+    // Convert features string to array for JSON storage
+    if (isset($validated['features'])) {
+        $features = array_filter(
+            array_map('trim', explode(',', $validated['features']))
+        );
+        $validated['features'] = !empty($features) ? json_encode($features) : null;
+    }
+
+    $plan->update($validated);
+
+    return redirect()->route('super-admin.plans.index')
+        ->with('success', 'Plan updated successfully.');
+}
 
     public function destroy(Plan $plan)
     {

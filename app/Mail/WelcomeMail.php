@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -14,10 +15,13 @@ class WelcomeMail extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
+    public $company; // ✅ Add this
     public $loginUrl;
 
-    public function __construct(User $user)
+    // ✅ FIXED: Constructor accepts both parameters
+    public function __construct(Company $company, User $user)
     {
+        $this->company = $company;
         $this->user = $user;
         $this->loginUrl = route('login');
     }
@@ -33,11 +37,11 @@ class WelcomeMail extends Mailable
     {
         return new Content(
             view: 'emails.welcome',
+            with: [
+                'company' => $this->company,
+                'user' => $this->user,
+                'loginUrl' => $this->loginUrl,
+            ]
         );
-    }
-
-    public function attachments(): array
-    {
-        return [];
     }
 }

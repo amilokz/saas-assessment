@@ -15,6 +15,12 @@ class TrialService
         ]);
     }
 
+    public function applyTrialLimitations(Company $company): void
+    {
+        // ✅ SIMPLE: Just start the trial - limitations are handled in Company model
+        $this->startTrial($company);
+    }
+
     public function checkTrialExpiry(Company $company): bool
     {
         if ($company->status !== 'trial_pending_approval') {
@@ -52,5 +58,59 @@ class TrialService
             'can_invite' => true,
             'max_invitations' => 1,
         ];
+    }
+
+    public function canUploadFile(Company $company): bool
+    {
+        return $company->canUploadMoreFiles();
+    }
+
+    public function canInviteUser(Company $company): bool
+    {
+        return $company->canInviteMoreUsers();
+    }
+
+    public function checkIfTrialExceeded(Company $company, string $type): bool
+    {
+        switch ($type) {
+            case 'files':
+                return !$company->canUploadMoreFiles();
+            case 'users':
+                return !$company->canInviteMoreUsers();
+            case 'storage':
+                return false; // Not implemented yet
+            default:
+                return false;
+        }
+    }
+
+    public function getTrialExceededMessage(Company $company, string $type): string
+    {
+        $limitations = $this->getTrialLimitations();
+        
+        switch ($type) {
+            case 'files':
+                return "Trial companies can only upload {$limitations['max_files']} files";
+            case 'users':
+                return "Trial companies can only have {$limitations['max_users']} user";
+            case 'storage':
+                return "Trial companies are limited to {$limitations['max_storage_mb']} MB storage";
+            default:
+                return "Trial limitation exceeded";
+        }
+    }
+
+    public function removeTrialLimitations(Company $company): void
+    {
+        // Remove trial status when company is approved
+        $company->update([
+            'status' => 'active',
+            'trial_ends_at' => null,
+        ]);
+    }
+
+    public function isTrialActive(Company $company): bool
+    {
+        return $company->isOnTrial();
     }
 }

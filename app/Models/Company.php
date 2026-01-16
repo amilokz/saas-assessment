@@ -22,13 +22,23 @@ class Company extends Model
         'trial_ends_at' => 'datetime',
     ];
 
-    // Add this relationship
+    // ✅ REMOVED: Global scope
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope('tenant', function ($query) {
+    //         $user = auth()->user();
+    //         if ($user && !$user->isSuperAdmin()) {
+    //             $query->where('id', $user->company_id);
+    //         }
+    //     });
+    // }
+
+    // Relationships
     public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    // Add other relationships if needed
     public function files()
     {
         return $this->hasMany(File::class);
@@ -46,7 +56,9 @@ class Company extends Model
 
     public function activeSubscription()
     {
-        return $this->hasOne(Subscription::class)->where('status', 'active');
+        return $this->hasOne(Subscription::class)
+                    ->where('status', 'active')
+                    ->latest();
     }
 
     public function invitations()
@@ -77,20 +89,18 @@ class Company extends Model
         return $this->status === 'approved';
     }
 
-    public function isPending()
-    {
-        return $this->status === 'pending';
-    }
-
     public function hasActiveSubscription()
     {
-        return $this->activeSubscription()->exists();
+        return $this->subscriptions()->where('status', 'active')->exists();
     }
 
-    public function hasExpiredTrial()
+    public function getTrialDaysLeftAttribute()
     {
-        return $this->status === 'trial_pending_approval' && 
-               $this->trial_ends_at && 
-               $this->trial_ends_at->isPast();
+        if (!$this->trial_ends_at || !$this->isOnTrial()) {
+            return 0;
+        }
+        
+        $days = now()->diffInDays($this->trial_ends_at, false);
+        return max(0, $days);
     }
 }

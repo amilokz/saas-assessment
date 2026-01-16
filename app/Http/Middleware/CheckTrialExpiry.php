@@ -22,26 +22,37 @@ class CheckTrialExpiry
 
         $company = $user->company;
 
-        // Check if trial has expired
         if ($company->status === 'trial_pending_approval' && 
             $company->trial_ends_at && 
             $company->trial_ends_at->isPast()) {
             
-            // Update company status if trial expired
-            if ($company->status === 'trial_pending_approval') {
-                $company->update(['status' => 'suspended']);
-            }
+            $company->update(['status' => 'suspended']);
+            
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return redirect()->route('login')
+                ->with('error', 'Your 7-day trial has expired. Please contact support.');
+        }
 
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'error' => 'Your trial period has expired. Please contact support.'
-                ], 403);
-            }
-
-            return redirect()->route('company.dashboard')
-                ->with('error', 'Your trial period has expired. Please contact support.');
+        if ($company->isOnTrial()) {
+            $this->applyTrialLimitations($request, $company);
         }
 
         return $next($request);
+    }
+
+    private function applyTrialLimitations(Request $request, $company)
+    {
+        $routeName = $request->route()->getName();
+        
+        if ($routeName === 'team.invite' && $company->users()->count() >= 1) {
+            abort(403, 'Trial companies can only have 1 user.');
+        }
+        
+        if ($routeName === 'files.store' && $company->files()->count() >= 2) {
+            abort(403, 'Trial companies can only upload 2 files.');
+        }
     }
 }

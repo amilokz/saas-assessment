@@ -2,37 +2,41 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Role;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $roles = [
             [
-                'id' => 1,
                 'name' => 'super_admin',
+                'display_name' => 'Super Administrator',
+                'description' => 'Full system access'
             ],
             [
-                'id' => 2,
                 'name' => 'company_admin',
+                'display_name' => 'Company Administrator',
+                'description' => 'Full company management access'
             ],
             [
-                'id' => 3,
                 'name' => 'support_user',
+                'display_name' => 'Support User',
+                'description' => 'Can reply to support messages and upload files'
             ],
             [
-                'id' => 4,
                 'name' => 'normal_user',
+                'display_name' => 'Normal User',
+                'description' => 'Basic user access'
             ],
         ];
 
         foreach ($roles as $role) {
-            Role::create($role);
+            Role::firstOrCreate(
+                ['name' => $role['name']],
+                $role
+            );
         }
-
-        $this->command->info('✅ Roles seeded successfully!');
     }
 }

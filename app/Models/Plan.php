@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Plan extends Model
 {
@@ -15,28 +16,38 @@ class Plan extends Model
         'description',
         'monthly_price',
         'yearly_price',
-        'max_storage_mb',
         'max_users',
-        'max_files',
-        'features',
+        'max_storage_mb',
         'is_active',
         'is_trial',
-        'trial_days',
-        'position',
+        'features',
     ];
 
     protected $casts = [
         'monthly_price' => 'decimal:2',
         'yearly_price' => 'decimal:2',
-        'max_storage_mb' => 'integer',
         'max_users' => 'integer',
-        'max_files' => 'integer',
+        'max_storage_mb' => 'integer',
         'is_active' => 'boolean',
         'is_trial' => 'boolean',
-        'trial_days' => 'integer',
-        'position' => 'integer',
         'features' => 'array',
     ];
+
+    // ✅ Auto-generate slug when creating/updating
+    protected static function booted()
+    {
+        static::creating(function ($plan) {
+            if (empty($plan->slug)) {
+                $plan->slug = Str::slug($plan->name);
+            }
+        });
+
+        static::updating(function ($plan) {
+            if ($plan->isDirty('name')) {
+                $plan->slug = Str::slug($plan->name);
+            }
+        });
+    }
 
     // Relationships
     public function subscriptions()
@@ -44,63 +55,35 @@ class Plan extends Model
         return $this->hasMany(Subscription::class);
     }
 
-    // Scopes
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeTrial($query)
-    {
-        return $query->where('is_trial', true);
-    }
-
-    public function scopePaid($query)
-    {
-        return $query->where('is_trial', false);
-    }
-
-    public function scopeOrdered($query)
-    {
-        return $query->orderBy('position')->orderBy('monthly_price');
-    }
-
     // Helper methods
-    public function isActive()
+    public function isBasic()
     {
-        return $this->is_active;
+        return $this->slug === 'basic';
     }
 
-    public function isTrial()
+    public function isPro()
     {
-        return $this->is_trial;
+        return $this->slug === 'pro';
     }
 
-    public function getYearlySavingsAttribute()
+    public function isEnterprise()
     {
-        if ($this->monthly_price > 0) {
-            $yearlyFromMonthly = $this->monthly_price * 12;
-            return $yearlyFromMonthly - $this->yearly_price;
-        }
-        return 0;
+        return $this->slug === 'enterprise';
     }
 
-    public function getYearlySavingsPercentageAttribute()
+    public function isTrialPlan()
     {
-        if ($this->monthly_price > 0 && $this->yearly_price > 0) {
-            $yearlyFromMonthly = $this->monthly_price * 12;
-            return round((($yearlyFromMonthly - $this->yearly_price) / $yearlyFromMonthly) * 100);
-        }
-        return 0;
+        return $this->slug === 'trial';
     }
 
-    public function getFormattedMonthlyPriceAttribute()
+    public function getPrice($cycle = 'monthly')
     {
-        return '$' . number_format($this->monthly_price, 2);
+        return $cycle === 'yearly' ? $this->yearly_price : $this->monthly_price;
     }
 
-    public function getFormattedYearlyPriceAttribute()
+    public function getFormattedPrice($cycle = 'monthly')
     {
-        return '$' . number_format($this->yearly_price, 2);
+        $price = $this->getPrice($cycle);
+        return '$' . number_format($price, 2);
     }
 }

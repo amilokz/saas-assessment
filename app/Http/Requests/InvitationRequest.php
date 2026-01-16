@@ -6,23 +6,16 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class InvitationRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize()
     {
         return auth()->check() && auth()->user()->isCompanyAdmin();
     }
 
-    public function rules(): array
+    public function rules()
     {
         return [
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email',
             'role_id' => 'required|exists:roles,id',
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'email.unique' => 'This email is already registered as a user.',
         ];
     }
 }

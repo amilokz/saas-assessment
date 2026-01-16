@@ -10,8 +10,11 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->onDelete('cascade');
-            $table->foreignId('plan_id')->constrained()->onDelete('cascade');
+            
+            // ✅ FIXED: Remove foreign key constraints during CREATE
+            // We'll add them in a separate migration after all tables exist
+            $table->unsignedBigInteger('company_id');
+            $table->unsignedBigInteger('plan_id');
             
             $table->string('stripe_subscription_id')->nullable()->unique();
             $table->string('stripe_customer_id')->nullable();
@@ -31,6 +34,8 @@ return new class extends Migration
             $table->timestamps();
             
             $table->index(['company_id', 'status']);
+            $table->index('plan_id');
+            $table->index('stripe_subscription_id');
         });
     }
 

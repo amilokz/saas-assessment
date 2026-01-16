@@ -3,18 +3,15 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
 // Company Registration API
 Route::post('/register/company', [\App\Http\Controllers\CompanyRegistrationController::class, 'store']);
+
+// Invitation API
+Route::post('/invitations/{token}/accept', [\App\Http\Controllers\InvitationController::class, 'processApi']);
 
 // Protected API routes
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -34,6 +31,3 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Support endpoints
     Route::apiResource('support', \App\Http\Controllers\Api\SupportController::class);
 });
-
-// Public invitation acceptance API
-Route::post('/invitations/{token}/accept', [\App\Http\Controllers\InvitationController::class, 'processApi']);

@@ -6,13 +6,12 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class FileUploadRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize()
     {
-        $user = auth()->user();
-        return $user && ($user->isCompanyAdmin() || $user->isSupportUser());
+        return auth()->check() && (auth()->user()->isCompanyAdmin() || auth()->user()->isSupportUser());
     }
 
-    public function rules(): array
+    public function rules()
     {
         return [
             'file' => 'required|file|max:10240', // 10MB max

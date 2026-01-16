@@ -12,21 +12,45 @@ class AuditLog extends Model
     protected $fillable = [
         'company_id',
         'user_id',
-        'event',           // Changed from 'action' to 'event'
+        'action',
         'model_type',
         'model_id',
-        'old_values',      // Changed from 'old_data' to 'old_values'
-        'new_values',      // Changed from 'new_data' to 'new_values'
+        'old_data',
+        'new_data',
         'ip_address',
         'user_agent',
         'url',
         'description',
+        'metadata',
     ];
 
     protected $casts = [
-        'old_values' => 'array',  // Changed from 'old_data' to 'old_values'
-        'new_values' => 'array',  // Changed from 'new_data' to 'new_values'
+        'old_data' => 'array',
+        'new_data' => 'array',
+        'metadata' => 'array',
     ];
+
+    // ✅ ADD THESE ACCESSORS to map 'action' to 'event'
+    public function getEventAttribute()
+    {
+        return $this->action;
+    }
+
+    public function setEventAttribute($value)
+    {
+        $this->attributes['action'] = $value;
+    }
+
+    // ✅ Optional: Add helper methods for common queries
+    public function scopeByEvent($query, $event)
+    {
+        return $query->where('action', $event);
+    }
+
+    public function scopeByAction($query, $action)
+    {
+        return $query->where('action', $action);
+    }
 
     // Relationships
     public function company()
@@ -44,7 +68,6 @@ class AuditLog extends Model
         return $this->morphTo();
     }
 
-    // Scopes
     public function scopeForCompany($query, $companyId)
     {
         return $query->where('company_id', $companyId);
@@ -58,10 +81,5 @@ class AuditLog extends Model
     public function scopeRecent($query, $days = 7)
     {
         return $query->where('created_at', '>=', now()->subDays($days));
-    }
-
-    public function scopeByEvent($query, $event)
-    {
-        return $query->where('event', $event);
     }
 }

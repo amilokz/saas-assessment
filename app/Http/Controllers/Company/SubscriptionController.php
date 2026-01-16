@@ -5,56 +5,50 @@ namespace App\Http\Controllers\Company;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\Subscription;
-use App\Services\AuditLogService;
-use App\Services\SubscriptionService;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SubscriptionController extends Controller
 {
-    protected $subscriptionService;
-
-    public function __construct(SubscriptionService $subscriptionService)
-    {
-        $this->subscriptionService = $subscriptionService;
-    }
-
     public function index()
     {
-        $company = Auth::user()->company;
+        $user = Auth::user();
+        
+        // Check if user is company admin
+        if (!$user->isCompanyAdmin()) {
+            abort(403, 'Only company administrators can manage subscription.');
+        }
+        
+        $company = $user->company;
+        
         $plans = Plan::where('is_active', true)
             ->where('is_trial', false)
             ->orderBy('monthly_price')
             ->get();
 
         $currentSubscription = $company->activeSubscription;
-        $payments = $company->payments()
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
 
         return view('company.subscription', compact(
-            'company', 
-            'plans', 
-            'currentSubscription',
-            'payments'
+            'company',
+            'plans',
+            'currentSubscription'
         ));
     }
 
     public function subscribe(Request $request)
     {
-        $company = Auth::user()->company;
+        $user = Auth::user();
+        
+        if (!$user->isCompanyAdmin()) {
+            abort(403, 'Only company administrators can subscribe.');
+        }
+        
+        $company = $user->company;
 
-        // Check if company is approved
         if (!$company->isApproved()) {
             return redirect()->back()
-                ->with('error', 'Your company must be approved before subscribing.');
-        }
-
-        // Check trial limitations
-        if ($company->isOnTrial()) {
-            return redirect()->back()
-                ->with('error', 'Cannot subscribe while on trial. Please wait for trial to end or contact support.');
+                ->with('error', 'Company must be approved to subscribe.');
         }
 
         $validated = $request->validate([
@@ -62,9 +56,9 @@ class SubscriptionController extends Controller
             'billing_cycle' => 'required|in:monthly,yearly',
         ]);
 
-        $plan = Plan::find($validated['plan_id']);
+        $plan = Plan::findOrFail($validated['plan_id']);
 
-        // Check if already subscribed to this plan
+        // Check if already subscribed
         $existingSubscription = $company->subscriptions()
             ->where('plan_id', $plan->id)
             ->where('status', 'active')
@@ -72,51 +66,55 @@ class SubscriptionController extends Controller
 
         if ($existingSubscription) {
             return redirect()->back()
-                ->with('error', 'You are already subscribed to this plan.');
+                ->with('error', 'Already subscribed to this plan.');
         }
 
-        // Create subscription
-        $result = $this->subscriptionService->createSubscription(
-            $company,
-            $plan,
-            $validated['billing_cycle']
-        );
-
-        if (!$result['success']) {
-            return redirect()->back()
-                ->with('error', $result['message']);
-        }
-
-        // Log subscription creation
-        AuditLogService::logSubscriptionCreated($result['subscription']);
-
-        return view('company.subscription-checkout', [
-            'clientSecret' => $result['client_secret'],
-            'subscription' => $result['subscription'],
+        // Create subscription (in real app, integrate with Stripe)
+        $subscription = Subscription::create([
+            'company_id' => $company->id,
+            'plan_id' => $plan->id,
+            'billing_cycle' => $validated['billing_cycle'],
+            'amount' => $validated['billing_cycle'] === 'yearly' ? $plan->yearly_price : $plan->monthly_price,
+            'status' => 'pending',
+            'trial_ends_at' => null,
         ]);
+
+        return redirect()->back()
+            ->with('success', 'Subscription created. Payment integration required.');
     }
 
-    public function cancel(Subscription $subscription)
+    public function cancel(Request $request, Subscription $subscription)
     {
+        $user = Auth::user();
+        
+        if (!$user->isCompanyAdmin()) {
+            abort(403, 'Only company administrators can cancel subscription.');
+        }
+        
         // Verify ownership
-        if ($subscription->company_id !== Auth::user()->company_id) {
-            abort(403, 'Unauthorized action.');
+        if ($subscription->company_id !== $user->company_id) {
+            abort(403, 'Unauthorized.');
         }
 
-        $success = $this->subscriptionService->cancelSubscription($subscription);
+        $subscription->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+        ]);
 
-        if ($success) {
-            return redirect()->route('company.subscription')
-                ->with('success', 'Subscription cancelled successfully.');
-        }
-
-        return redirect()->route('company.subscription')
-            ->with('error', 'Failed to cancel subscription. Please try again.');
+        return redirect()->back()
+            ->with('success', 'Subscription cancelled successfully.');
     }
 
     public function invoices()
     {
-        $company = Auth::user()->company;
+        $user = Auth::user();
+        
+        if (!$user->isCompanyAdmin()) {
+            abort(403, 'Only company administrators can view invoices.');
+        }
+        
+        $company = $user->company;
+        
         $payments = $company->payments()
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -126,14 +124,20 @@ class SubscriptionController extends Controller
 
     public function downloadInvoice(Payment $payment)
     {
+        $user = Auth::user();
+        
+        if (!$user->isCompanyAdmin()) {
+            abort(403, 'Only company administrators can download invoices.');
+        }
+        
         // Verify ownership
-        if ($payment->company_id !== Auth::user()->company_id) {
-            abort(403, 'Unauthorized action.');
+        if ($payment->company_id !== $user->company_id) {
+            abort(403, 'Unauthorized.');
         }
 
-        // In a real application, you would generate a PDF invoice here
-        // For now, we'll just show the payment details
-        
-        return view('company.invoice-detail', compact('payment'));
+        // In a real app, generate and download PDF invoice
+        // For now, show a message
+        return redirect()->back()
+            ->with('info', 'Invoice download feature requires PDF generation.');
     }
 }

@@ -2,52 +2,43 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
-use App\Models\Company;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class SuperAdminSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // First, create a super admin company if it doesn't exist
-        $superAdminCompany = Company::firstOrCreate(
-            ['email' => 'admin@platform.com'],
-            [
-                'name' => 'Platform Administration',
-                'admin_name' => 'Super Admin',
-                'business_type' => 'Platform',
-                'status' => 'approved',
-                'trial_ends_at' => null,
-            ]
-        );
-
-        // Get the super admin role
+        // Find super admin role
         $superAdminRole = Role::where('name', 'super_admin')->first();
-
+        
         if (!$superAdminRole) {
-            $this->command->error('❌ Super Admin role not found! Run RoleSeeder first.');
+            $this->command->error('Super admin role not found. Run RoleSeeder first.');
             return;
         }
 
-        // Create or update the super admin user
-        $superAdmin = User::updateOrCreate(
-            ['email' => 'superadmin@example.com'],
-            [
+        // Check if super admin already exists
+        $existingSuperAdmin = User::where('email', 'admin@saas.test')->first();
+        
+        if (!$existingSuperAdmin) {
+            // Create super admin user
+            User::create([
                 'name' => 'Super Admin',
+                'email' => 'admin@saas.test',
                 'password' => Hash::make('password123'),
-                'company_id' => $superAdminCompany->id,
                 'role_id' => $superAdminRole->id,
+                'company_id' => null,
                 'email_verified_at' => now(),
-                // Removed 'is_active' since column doesn't exist
-            ]
-        );
-
-        $this->command->info('✅ Super Admin created successfully!');
-        $this->command->info('📧 Email: superadmin@example.com');
-        $this->command->info('🔑 Password: password123');
-        $this->command->warn('⚠️  Please change the password after first login!');
+                'is_active' => true,
+            ]);
+            
+            $this->command->info('Super admin user created successfully!');
+            $this->command->info('Email: admin@saas.test');
+            $this->command->info('Password: password123');
+        } else {
+            $this->command->info('Super admin user already exists.');
+        }
     }
 }

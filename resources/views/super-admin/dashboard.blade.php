@@ -1,174 +1,220 @@
-@extends('layouts.app')
+@extends('layouts.super-admin')
 
-@section('title', 'Super Admin Dashboard')
+@section('title', 'Dashboard')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
-                    </div>
-                    <div class="ml-5">
-                        <p class="text-sm font-medium text-gray-500">Total Companies</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['total_companies'] }}</p>
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
+            <p class="text-muted mb-0">Welcome back, {{ Auth::user()->name }}! Here's what's happening with your platform.</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-calendar-alt me-2"></i>Last 30 Days
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Today</a></li>
+                <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                <li><a class="dropdown-item active" href="#">Last 30 Days</a></li>
+                <li><a class="dropdown-item" href="#">This Month</a></li>
+                <li><a class="dropdown-item" href="#">Last Month</a></li>
+            </ul>
+        </div>
+    </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div class="ml-5">
-                        <p class="text-sm font-medium text-gray-500">Pending Approval</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['pending_companies'] }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div class="ml-5">
-                        <p class="text-sm font-medium text-gray-500">Active Companies</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['active_companies'] }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5 3.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0l-1.5-.75"/>
-                        </svg>
-                    </div>
-                    <div class="ml-5">
-                        <p class="text-sm font-medium text-gray-500">Total Users</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['total_users'] }}</p>
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Companies
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_companies'] }}</div>
+                            <div class="mt-2">
+                                <span class="badge bg-success">Active: {{ $stats['active_companies'] }}</span>
+                                <span class="badge bg-warning">Trial: {{ $stats['trial_companies'] }}</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-building fa-2x text-primary"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Users
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_users'] }}</div>
+                            <div class="mt-2">
+                                <span class="text-xs text-muted">Across all companies</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Active Subscriptions
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['active_subscriptions'] }}</div>
+                            <div class="mt-2">
+                                <span class="text-xs text-muted">Ongoing subscriptions</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-credit-card fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Pending Approval
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_companies'] }}</div>
+                            <div class="mt-2">
+                                <span class="text-xs text-muted">Awaiting review</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Companies & Quick Actions -->
+    <div class="row">
         <!-- Recent Companies -->
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 bg-white border-b border-gray-200">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-semibold text-gray-800">Recent Companies</h2>
-                    <a href="{{ route('super-admin.companies.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        View All →
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Companies</h6>
+                    <a href="{{ route('super-admin.companies.index') }}" class="btn btn-sm btn-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
                     </a>
                 </div>
-
-                @if($recentCompanies->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Company
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Admin
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Trial Ends
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
+                                    <th>Company Name</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody>
                                 @foreach($recentCompanies as $company)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div>
-                                                    <div class="text-sm font-medium text-gray-900">
-                                                        {{ $company->name }}
-                                                    </div>
-                                                    <div class="text-sm text-gray-500">
-                                                        {{ $company->email }}
-                                                    </div>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-3">
+                                                <div class="avatar-title bg-light text-primary rounded-circle">
+                                                    <i class="fas fa-building"></i>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ $company->admin_name }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @php
-                                                $statusColors = [
-                                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                                    'trial_pending_approval' => 'bg-blue-100 text-blue-800',
-                                                    'approved' => 'bg-green-100 text-green-800',
-                                                    'rejected' => 'bg-red-100 text-red-800',
-                                                    'suspended' => 'bg-gray-100 text-gray-800',
-                                                ];
-                                            @endphp
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$company->status] }}">
-                                                {{ str_replace('_', ' ', ucfirst($company->status)) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            @if($company->trial_ends_at)
-                                                {{ $company->trial_ends_at->format('M d, Y') }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            @if($company->status === 'pending' || $company->status === 'trial_pending_approval')
-                                                <div class="flex space-x-2">
-                                                    <form action="{{ route('super-admin.companies.approve', $company) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" class="text-green-600 hover:text-green-900">
-                                                            Approve
-                                                        </button>
-                                                    </form>
-                                                    <form action="{{ route('super-admin.companies.reject', $company) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" class="text-red-600 hover:text-red-900">
-                                                            Reject
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            @else
-                                                <a href="#" class="text-blue-600 hover:text-blue-900">View</a>
-                                            @endif
-                                        </td>
-                                    </tr>
+                                            <div>
+                                                <h6 class="mb-0">{{ $company->name }}</h6>
+                                                <small class="text-muted">{{ $company->email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 
+                                            $company->status == 'approved' ? 'success' : 
+                                            ($company->status == 'trial_pending_approval' ? 'warning' : 
+                                            ($company->status == 'pending' ? 'info' : 'danger')) 
+                                        }}">
+                                            {{ str_replace('_', ' ', ucfirst($company->status)) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ $company->created_at->format('M d, Y') }}
+                                        <div class="text-xs text-muted">{{ $company->created_at->diffForHumans() }}</div>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                @else
-                    <div class="text-center py-8">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No companies</h3>
-                        <p class="mt-1 text-sm text-gray-500">No companies have registered yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('super-admin.companies.index') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-building me-2"></i> Manage Companies
+                        </a>
+                        <a href="{{ route('super-admin.plans.index') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-credit-card me-2"></i> Manage Plans
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-chart-line me-2"></i> View Reports
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-cog me-2"></i> Settings
+                        </a>
                     </div>
-                @endif
+                    
+                    <hr class="my-4">
+                    
+                    <h6 class="font-weight-bold mb-3">Platform Status</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">System Uptime</span>
+                        <span class="text-success">99.9%</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">API Status</span>
+                        <span class="text-success">Operational</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Last Backup</span>
+                        <span class="text-muted">Today, 02:00 AM</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

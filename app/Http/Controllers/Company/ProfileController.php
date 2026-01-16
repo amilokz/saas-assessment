@@ -3,71 +3,90 @@
 namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
-use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
+use App\Models\Company;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the company user's profile page.
-     */
-    public function index()
+    public function show()
     {
-        $user = Auth::user()->load('company', 'role');
-        return view('company.profile', compact('user'));
+        $user = Auth::user();
+        
+        // If user is super admin, redirect to default profile
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('profile.edit');
+        }
+        
+        // Get company for regular users
+        $company = $user->company;
+        
+        if (!$company) {
+            // If no company exists, show an error or redirect
+            return view('company.no-company', [
+                'user' => $user
+            ]);
+        }
+
+        return view('company.profile', [
+            'user' => $user,
+            'company' => $company
+        ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
+    public function edit()
+    {
+        $user = Auth::user();
+        
+        // If user is super admin, redirect to default profile
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('profile.edit');
+        }
+        
+        $company = $user->company;
+        
+        if (!$company) {
+            return view('company.no-company', [
+                'user' => $user
+            ]);
+        }
+
+        return view('company.profile-edit', [
+            'user' => $user,
+            'company' => $company
+        ]);
+    }
+
     public function update(Request $request)
     {
         $user = Auth::user();
         
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('profile.edit');
+        }
+        
+        $company = $user->company;
+        
+        if (!$company) {
+            return redirect()->route('company.profile')->with('error', 'No company found.');
+        }
+
+        // Validate request
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'current_password' => ['nullable', 'required_with:password'],
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
         ]);
 
-        // Verify current password if changing password
-        if ($request->filled('password')) {
-            if (!Hash::check($request->current_password, $user->password)) {
-                return back()->withErrors([
-                    'current_password' => 'The provided password does not match your current password.'
-                ]);
-            }
-            
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
+        // Update company information
+        $company->update($validated);
 
-        // Track changes for audit log
-        $changes = [];
-        if ($user->name !== $validated['name']) {
-            $changes['name'] = ['old' => $user->name, 'new' => $validated['name']];
-        }
-        if ($user->email !== $validated['email']) {
-            $changes['email'] = ['old' => $user->email, 'new' => $validated['email']];
-        }
-
-        $user->update($validated);
-
-        // Log profile update if AuditLogService exists
-        if (!empty($changes) && class_exists(AuditLogService::class)) {
-            try {
-                AuditLogService::logProfileUpdate($user, $changes);
-            } catch (\Exception $e) {
-                // Log error but don't break the update
-                \Log::error('Failed to log profile update: ' . $e->getMessage());
-            }
-        }
-
-        return back()->with('success', 'Profile updated successfully.');
+        return redirect()->route('company.profile')->with('success', 'Company profile updated successfully.');
     }
 }

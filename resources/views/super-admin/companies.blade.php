@@ -1,214 +1,250 @@
-@extends('layouts.app')
+@extends('layouts.super-admin')
 
 @section('title', 'Manage Companies')
 
-@section('header')
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Manage Companies
-    </h2>
-@endsection
-
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            @php
-                $statuses = [
-                    'pending' => ['bg-yellow-100 text-yellow-800', 'Pending Approval'],
-                    'trial_pending_approval' => ['bg-blue-100 text-blue-800', 'On Trial'],
-                    'approved' => ['bg-green-100 text-green-800', 'Active'],
-                    'rejected' => ['bg-red-100 text-red-800', 'Rejected'],
-                    'suspended' => ['bg-gray-100 text-gray-800', 'Suspended'],
-                ];
-            @endphp
-
-            @foreach($statuses as $status => [$bgColor, $label])
-                @php
-                    $count = $companies->where('status', $status)->count();
-                @endphp
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 rounded-md p-2 {{ $bgColor }}">
-                            <span class="text-lg font-semibold">{{ $count }}</span>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">{{ $label }}</p>
-                            <p class="text-lg font-semibold text-gray-900">{{ $count }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Company Management</h1>
+            <p class="text-muted mb-0">Review, approve, and manage registered companies</p>
         </div>
+        <div class="d-flex">
+            <form method="GET" action="{{ route('super-admin.companies.index') }}" class="d-flex me-2">
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Search companies..." value="{{ request('search') }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </form>
+            <button class="btn btn-primary" onclick="exportCompanies()">
+                <i class="fas fa-download me-2"></i> Export
+            </button>
+        </div>
+    </div>
 
-        <!-- Companies Table -->
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 bg-white border-b border-gray-200">
-                <!-- Search and Filters -->
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-900">All Companies</h3>
-                        <p class="text-sm text-gray-500">Manage company registrations and approvals</p>
-                    </div>
-                    
-                    <div class="mt-4 md:mt-0">
-                        <div class="relative">
-                            <input type="text" 
-                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-64" 
-                                placeholder="Search companies...">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        @php
+            $statusStats = [
+                'pending' => ['color' => 'warning', 'icon' => 'clock', 'label' => 'Pending'],
+                'trial_pending_approval' => ['color' => 'info', 'icon' => 'hourglass-half', 'label' => 'On Trial'],
+                'approved' => ['color' => 'success', 'icon' => 'check-circle', 'label' => 'Active'],
+                'rejected' => ['color' => 'danger', 'icon' => 'times-circle', 'label' => 'Rejected'],
+                'suspended' => ['color' => 'secondary', 'icon' => 'pause-circle', 'label' => 'Suspended'],
+            ];
+        @endphp
+
+        @foreach($statusStats as $status => $config)
+            @php
+                $count = $companies->where('status', $status)->count();
+            @endphp
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="card border-left-{{ $config['color'] }} shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-{{ $config['color'] }} text-uppercase mb-1">
+                                    {{ $config['label'] }}
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-{{ $config['icon'] }} fa-2x text-{{ $config['color'] }}"></i>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        @endforeach
+    </div>
 
-                @if($companies->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Company
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Admin
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Users
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Registered
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($companies as $company)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                                    </svg>
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">
-                                                        {{ $company->name }}
-                                                    </div>
-                                                    <div class="text-sm text-gray-500">
-                                                        {{ $company->email }}
-                                                    </div>
-                                                    @if($company->business_type)
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                                            {{ $company->business_type }}
-                                                        </span>
-                                                    @endif
+    <!-- Companies Table -->
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                All Companies ({{ $companies->total() }})
+            </h6>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-filter me-1"></i> Filter by Status
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{{ route('super-admin.companies.index') }}">All Companies</a></li>
+                    <li><a class="dropdown-item" href="{{ route('super-admin.companies.index', ['status' => 'pending']) }}">Pending Approval</a></li>
+                    <li><a class="dropdown-item" href="{{ route('super-admin.companies.index', ['status' => 'approved']) }}">Active Companies</a></li>
+                    <li><a class="dropdown-item" href="{{ route('super-admin.companies.index', ['status' => 'trial_pending_approval']) }}">On Trial</a></li>
+                    <li><a class="dropdown-item" href="{{ route('super-admin.companies.index', ['status' => 'suspended']) }}">Suspended</a></li>
+                    <li><a class="dropdown-item" href="{{ route('super-admin.companies.index', ['status' => 'rejected']) }}">Rejected</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            @if($companies->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>COMPANY</th>
+                                <th>ADMIN</th>
+                                <th>USERS</th>
+                                <th>STATUS</th>
+                                <th>REGISTERED</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($companies as $company)
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-sm">
+                                                <div class="avatar-title bg-light text-primary rounded-circle">
+                                                    <i class="fas fa-building"></i>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ $company->admin_name }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {{ $company->users_count }} users
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @php
-                                                $statusColors = [
-                                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                                    'trial_pending_approval' => 'bg-blue-100 text-blue-800',
-                                                    'approved' => 'bg-green-100 text-green-800',
-                                                    'rejected' => 'bg-red-100 text-red-800',
-                                                    'suspended' => 'bg-gray-100 text-gray-800',
-                                                ];
-                                            @endphp
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$company->status] }}">
-                                                {{ str_replace('_', ' ', ucfirst($company->status)) }}
-                                            </span>
-                                            @if($company->trial_ends_at)
-                                                <div class="text-xs text-gray-500 mt-1">
-                                                    Trial ends: {{ $company->trial_ends_at->format('M d') }}
-                                                </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <a href="{{ route('super-admin.companies.show', $company) }}" class="text-decoration-none">
+                                                <h6 class="mb-1">{{ $company->name }}</h6>
+                                            </a>
+                                            <p class="text-muted mb-0 small">{{ $company->email }}</p>
+                                            @if($company->business_type)
+                                                <span class="badge bg-light text-dark">{{ $company->business_type }}</span>
                                             @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $company->created_at->format('M d, Y') }}
-                                            <div class="text-xs text-gray-400">
-                                                {{ $company->created_at->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-xs">
+                                                <div class="avatar-title bg-light rounded-circle">
+                                                    <i class="fas fa-user text-muted"></i>
+                                                </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
-                                                @if(in_array($company->status, ['pending', 'trial_pending_approval']))
-                                                    <form action="{{ route('super-admin.companies.approve', $company) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" 
-                                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                                            Approve
-                                                        </button>
-                                                    </form>
-                                                    <form action="{{ route('super-admin.companies.reject', $company) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" 
-                                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                                            Reject
-                                                        </button>
-                                                    </form>
-                                                @elseif($company->status === 'approved')
-                                                    <form action="{{ route('super-admin.companies.suspend', $company) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" 
-                                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                                            Suspend
-                                                        </button>
-                                                    </form>
-                                                    <a href="#" 
-                                                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                                        View
-                                                    </a>
-                                                @elseif($company->status === 'suspended')
-                                                    <form action="{{ route('super-admin.companies.activate', $company) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" 
-                                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                                            Activate
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <span class="d-block">{{ $company->admin_name }}</span>
+                                            <small class="text-muted">{{ $company->admin_email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-users me-1"></i> {{ $company->users_count ?? 0 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @php
+                                        $statusConfig = [
+                                            'pending' => ['color' => 'warning', 'icon' => 'clock'],
+                                            'trial_pending_approval' => ['color' => 'info', 'icon' => 'hourglass-half'],
+                                            'approved' => ['color' => 'success', 'icon' => 'check-circle'],
+                                            'rejected' => ['color' => 'danger', 'icon' => 'times-circle'],
+                                            'suspended' => ['color' => 'secondary', 'icon' => 'pause-circle'],
+                                        ][$company->status];
+                                    @endphp
+                                    <span class="badge bg-{{ $statusConfig['color'] }}">
+                                        <i class="fas fa-{{ $statusConfig['icon'] }} me-1"></i>
+                                        {{ str_replace('_', ' ', ucfirst($company->status)) }}
+                                    </span>
+                                    @if($company->trial_ends_at)
+                                        <div class="text-xs text-muted mt-1">
+                                            Trial ends: {{ $company->trial_ends_at->format('M d, Y') }}
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span>{{ $company->created_at->format('M d, Y') }}</span>
+                                        <small class="text-muted">{{ $company->created_at->diffForHumans() }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        @if(in_array($company->status, ['pending', 'trial_pending_approval']))
+                                            <form action="{{ route('super-admin.companies.approve', $company) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('super-admin.companies.reject', $company) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            </form>
+                                        @elseif($company->status === 'approved')
+                                            <form action="{{ route('super-admin.companies.suspend', $company) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-pause"></i> Suspend
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('super-admin.companies.show', $company) }}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        @elseif($company->status === 'suspended')
+                                            <form action="{{ route('super-admin.companies.activate', $company) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-play"></i> Activate
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('super-admin.companies.show', $company) }}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        @else
+                                            <a href="{{ route('super-admin.companies.show', $company) }}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-                    <!-- Pagination -->
-                    <div class="mt-6">
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        Showing {{ $companies->firstItem() }} to {{ $companies->lastItem() }} of {{ $companies->total() }} entries
+                    </div>
+                    <div>
                         {{ $companies->links() }}
                     </div>
-                @else
-                    <div class="text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No companies</h3>
-                        <p class="mt-1 text-sm text-gray-500">No companies have registered yet.</p>
+                </div>
+            @else
+                <div class="text-center py-5">
+                    <div class="py-5">
+                        <i class="fas fa-building fa-4x text-muted mb-4"></i>
+                        <h4 class="text-muted">No Companies Found</h4>
+                        <p class="text-muted mb-4">No companies have registered yet.</p>
+                        @if(request('search') || request('status'))
+                            <a href="{{ route('super-admin.companies.index') }}" class="btn btn-primary">
+                                Clear Filters
+                            </a>
+                        @endif
                     </div>
-                @endif
-            </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>
+
+<script>
+function exportCompanies() {
+    // Add export functionality here
+    alert('Export feature would be implemented here');
+}
+</script>
 @endsection
