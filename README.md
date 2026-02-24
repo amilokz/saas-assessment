@@ -60,6 +60,7 @@ You can explore the live platform using these test accounts. **Please do not sha
 
 ### 👑 **Super Admin (Platform Owner)**
 Access the full system, manage companies, approve registrations, and configure plans.
+
 - **URL:** [https://saas-assessment.wuaze.com/super-admin/dashboard](https://saas-assessment.wuaze.com/super-admin/dashboard)
 - **Email:** `admin@saas.test`
 - **Password:** `password123`
@@ -67,6 +68,7 @@ Access the full system, manage companies, approve registrations, and configure p
 
 ### 🏢 **Company Admin (Sample Company)**
 Experience the platform from a tenant's perspective: manage your team, subscriptions, and files.
+
 - **URL:** [https://saas-assessment.wuaze.com/company/dashboard](https://saas-assessment.wuaze.com/company/dashboard)
 - **Email:** `admin@newcompany.com`
 - **Password:** `password`
@@ -77,6 +79,7 @@ Experience the platform from a tenant's perspective: manage your team, subscript
 ## 🚀 **Key Features**
 
 ### ✅ **Core Functionality**
+
 | Feature | Description |
 | :--- | :--- |
 | **Multi-tenant Architecture** | Complete data isolation between companies for security and scalability. |
@@ -90,6 +93,7 @@ Experience the platform from a tenant's perspective: manage your team, subscript
 | **Professional UI** | Modern, clean, and fully responsive interface built with **Bootstrap 5**. |
 
 ### 🎨 **UI/UX Highlights**
+
 - **Dashboard Analytics:** Real-time stats and key metrics for both Super Admin and Company users.
 - **Clean Navigation:** Intuitive sidebar menu system for easy access to all modules.
 - **Interactive Tables:** Sortable, searchable, and paginated data tables for managing companies, users, files, etc.
@@ -101,6 +105,7 @@ Experience the platform from a tenant's perspective: manage your team, subscript
 ## 🛠️ **Tech Stack**
 
 ### **Backend**
+
 | Technology | Purpose |
 | :--- | :--- |
 | **Framework** | Laravel 11 |
@@ -113,6 +118,7 @@ Experience the platform from a tenant's perspective: manage your team, subscript
 | **Queue/Jobs** | Laravel Queue (Database/Redis) |
 
 ### **Frontend**
+
 | Technology | Purpose |
 | :--- | :--- |
 | **Templating** | Laravel Blade |
@@ -160,6 +166,7 @@ text
 Get the platform up and running on your local machine in minutes.
 
 ### **Prerequisites**
+
 - PHP 8.2 or higher
 - Composer
 - Node.js & NPM
@@ -168,116 +175,119 @@ Get the platform up and running on your local machine in minutes.
 
 ### **Installation Steps**
 
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/amilokz/saas-assessment.git
-    cd saas-assessment
-    ```
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/amilokz/saas-assessment.git
+   cd saas-assessment
+Install Dependencies
 
-2.  **Install Dependencies**
-    ```bash
-    composer install
-    npm install
-    npm run build
-    ```
+bash
+composer install
+npm install
+npm run build
+Environment Setup
 
-3.  **Environment Setup**
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
+bash
+cp .env.example .env
+php artisan key:generate
+Configure Environment (.env)
+Open the .env file and set your database, mail, and Stripe credentials.
 
-4.  **Configure Environment (`.env`)**  
-    Open the `.env` file and set your database, mail, and Stripe credentials.
-    ```env
-    APP_NAME="SaaS Assessment"
-    APP_ENV=local
-    APP_DEBUG=true
-    APP_URL=http://localhost:8000
+env
+APP_NAME="SaaS Assessment"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
-    DB_CONNECTION=mysql
-    DB_HOST=127.0.0.1
-    DB_PORT=3306
-    DB_DATABASE=saas_assessment
-    DB_USERNAME=root
-    DB_PASSWORD=
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=saas_assessment
+DB_USERNAME=root
+DB_PASSWORD=
 
-    STRIPE_KEY=pk_test_your_stripe_publishable_key
-    STRIPE_SECRET=sk_test_your_stripe_secret_key
-    STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+STRIPE_KEY=pk_test_your_stripe_publishable_key
+STRIPE_SECRET=sk_test_your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
-    MAIL_MAILER=smtp
-    MAIL_HOST=smtp.mailtrap.io
-    MAIL_PORT=2525
-    MAIL_USERNAME=your_mailtrap_username
-    MAIL_PASSWORD=your_mailtrap_password
-    MAIL_FROM_ADDRESS=noreply@saas-assessment.com
-    MAIL_FROM_NAME="${APP_NAME}"
-    ```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mailtrap_username
+MAIL_PASSWORD=your_mailtrap_password
+MAIL_FROM_ADDRESS=noreply@saas-assessment.com
+MAIL_FROM_NAME="${APP_NAME}"
+Database Setup
 
-5.  **Database Setup**
-    ```bash
-    php artisan migrate --seed
-    php artisan storage:link
-    ```
+bash
+php artisan migrate --seed
+php artisan storage:link
+Set Permissions (For Linux/Mac)
 
-6.  **Set Permissions (For Linux/Mac)**
-    ```bash
-    chmod -R 775 storage bootstrap/cache
-    # For production, you might need: chown -R www-data:www-data storage bootstrap/cache
-    ```
+bash
+chmod -R 775 storage bootstrap/cache
+# For production, you might need: chown -R www-data:www-data storage bootstrap/cache
+Start the Development Server
 
-7.  **Start the Development Server**
-    ```bash
-    php artisan serve
-    ```
-    Access the application at **http://localhost:8000**.
+bash
+php artisan serve
+Access the application at http://localhost:8000.
 
----
-
-## 📊 **User Roles & Permissions**
-
+📊 User Roles & Permissions
 The platform uses a robust role-based access control system.
 
-### 1. **Super Admin (Platform Owner)**
-- ✅ Approve/Reject new company registrations
-- ✅ Create, edit, and manage subscription plans
-- ✅ View all registered companies and their details
-- ✅ Access comprehensive audit logs for the entire platform
-- ✅ Suspend or activate any company
-- ✅ Full system configuration access
+1. Super Admin (Platform Owner)
+✅ Approve/Reject new company registrations
 
-### 2. **Company Admin (Company Owner)**
-- ✅ Manage company profile and settings
-- ✅ Purchase, upgrade, or cancel subscriptions
-- ✅ Invite, manage, and remove team members
-- ✅ Upload, download, and manage company files
-- ✅ View audit logs specific to their company
-- ✅ Create and manage support tickets
+✅ Create, edit, and manage subscription plans
 
-### 3. **Support User (Company Staff)**
-- ✅ Reply to support messages
-- ✅ Upload and delete files (if permitted by Company Admin)
-- ✅ View all company files
-- ✅ Basic dashboard access with limited analytics
+✅ View all registered companies and their details
 
-### 4. **Normal User (Basic Access)**
-- ✅ View and download files they have access to
-- ✅ Send support messages
-- ✅ View basic dashboard statistics
+✅ Access comprehensive audit logs for the entire platform
 
----
+✅ Suspend or activate any company
 
-## 🔄 **Workflow Examples**
+✅ Full system configuration access
 
-### **Company Registration Flow**
-```mermaid
-graph LR
-    A[Register Company] --> B{7-Day Trial Starts};
-    B --> C[Super Admin Approval];
-    C -- Approved --> D[Company Activated];
-    C -- Rejected --> E[Registration Rejected];
-    D --> F[Subscribe to Plan];
+2. Company Admin (Company Owner)
+✅ Manage company profile and settings
+
+✅ Purchase, upgrade, or cancel subscriptions
+
+✅ Invite, manage, and remove team members
+
+✅ Upload, download, and manage company files
+
+✅ View audit logs specific to their company
+
+✅ Create and manage support tickets
+
+3. Support User (Company Staff)
+✅ Reply to support messages
+
+✅ Upload and delete files (if permitted by Company Admin)
+
+✅ View all company files
+
+✅ Basic dashboard access with limited analytics
+
+4. Normal User (Basic Access)
+✅ View and download files they have access to
+
+✅ Send support messages
+
+✅ View basic dashboard statistics
+
+🔄 Workflow Examples
+Company Registration Flow
+
+
+
+
+
+
+
+
 A new company registers via the public form at /register/company.
 
 An automatic 7-day trial begins, granting limited access.
@@ -505,5 +515,3 @@ Documentation: https://github.com/amilokz/saas-assessment/wiki
 Project Link: https://github.com/amilokz/saas-assessment
 
 <div align="center"> <h3>⭐ Found this project helpful? Please consider giving it a star!</h3> <p>It helps others discover it and motivates further development.</p> <p> <a href="https://github.com/amilokz/saas-assessment"><img src="https://img.shields.io/github/stars/amilokz/saas-assessment?style=for-the-badge" alt="Star on GitHub"></a> </p> <p>Built with ❤️ by <a href="https://github.com/amilokz">amilokz</a></p> </div> ```
-This comprehensive README is designed to be the perfect introduction to your project, helping users, contributors, and potential employers quickly understand its value, features, and how to get started. It's structured for clarity, uses visual elements like badges and tables, and provides all necessary technical details.
-
